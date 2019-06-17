@@ -35,6 +35,16 @@ public class ServiceStrategyContextHolder implements StrategyContextHolder {
     public Map<String, Object> getRpcAttributes() {
         return RpcStrategyContext.getCurrentContext().getAttributes();
     }
+    
+    public Object getRpcAttributes(String key) {
+        return RpcStrategyContext.getCurrentContext().get(key);
+    }
+    
+    public RpcStrategyContext setRpcAttributes(String key, Object value) {
+        return RpcStrategyContext.getCurrentContext().add(key,value);
+    }
+    
+    
 
     @Override
     public String getHeader(String name) {
