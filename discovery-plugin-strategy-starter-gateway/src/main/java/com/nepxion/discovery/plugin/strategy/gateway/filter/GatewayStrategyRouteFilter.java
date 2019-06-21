@@ -24,6 +24,7 @@ import com.nepxion.discovery.common.constant.DiscoveryConstant;
 import com.nepxion.discovery.common.entity.RuleEntity;
 import com.nepxion.discovery.common.entity.StrategyEntity;
 import com.nepxion.discovery.plugin.framework.adapter.PluginAdapter;
+import com.nepxion.discovery.plugin.strategy.context.StrategyContextHolder;
 import com.nepxion.discovery.plugin.strategy.gateway.constant.GatewayStrategyConstant;
 
 public class GatewayStrategyRouteFilter implements GlobalFilter, Ordered {
@@ -32,6 +33,9 @@ public class GatewayStrategyRouteFilter implements GlobalFilter, Ordered {
 
     @Autowired
     private PluginAdapter pluginAdapter;
+    
+    @Autowired
+    protected StrategyContextHolder strategyContextHolder;
 
     @Override
     public int getOrder() {
