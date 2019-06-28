@@ -44,7 +44,7 @@ public class GatewayStrategyRouteFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String routeVersion = getRouteVersion();
+        String routeVersion = getRouteVersion(exchange);
         String routeRegion = getRouteRegion();
         String routeAddress = getRouteAddress();
 
@@ -67,7 +67,7 @@ public class GatewayStrategyRouteFilter implements GlobalFilter, Ordered {
     }
 
     // 从远程配置中心或者本地配置文件获取版本路由配置。如果是远程配置中心，则值会动态改变
-    protected String getRouteVersion() {
+    protected String getRouteVersion(ServerWebExchange exchange) {
         RuleEntity ruleEntity = pluginAdapter.getRule();
         if (ruleEntity != null) {
             StrategyEntity strategyEntity = ruleEntity.getStrategyEntity();
