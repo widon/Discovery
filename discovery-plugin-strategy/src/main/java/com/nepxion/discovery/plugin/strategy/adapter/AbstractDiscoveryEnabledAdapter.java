@@ -67,12 +67,6 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
             return true;
         }
 
-        Map<String, String> metadata = pluginAdapter.getServerMetadata(server);
-        String version = metadata.get(DiscoveryConstant.VERSION);
-        if (StringUtils.isEmpty(version)) {
-            return false;
-        }
-
         String versions = null;
         try {
             Map<String, String> versionMap = JsonUtil.fromJson(versionValue, Map.class);
@@ -84,6 +78,20 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
 
         if (StringUtils.isEmpty(versions)) {
             return true;
+        }
+        
+        Map<String, String> metadata = pluginAdapter.getServerMetadata(server);
+        String version = metadata.get(DiscoveryConstant.VERSION);
+        if (StringUtils.isEmpty(version)) {
+        	/*
+        	 * 如果header里面有这个服务的版本要求，如果服务标签为空，则反回false
+        	 * 如果header对这个服务没要求，服务标签为空，则反回true
+        	 */
+        	if(StringUtils.isNotBlank(versions)) {
+        		 return false;
+        	}else {
+        		return true;
+        	}
         }
 
         List<String> versionList = StringUtil.splitToList(versions, DiscoveryConstant.SEPARATE);
