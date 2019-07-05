@@ -82,15 +82,14 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
         
         Map<String, String> metadata = pluginAdapter.getServerMetadata(server);
         String version = metadata.get(DiscoveryConstant.VERSION);
+        
         if (StringUtils.isEmpty(version)) {
-        	/*
-        	 * 如果header里面有这个服务的版本要求，如果服务标签为空，则反回false
+        	/** 如果header里面有这个服务的版本要求，如果服务标签为空，则反回false
         	 * 如果header对这个服务没要求，服务标签为空，则反回true
         	 */
+        	//return StringUtils.isBlank(versions); //为了不与上面 StringUtils.isEmpty(versions)的判断混淆,只需判断
         	if(StringUtils.isNotBlank(versions)) {
-        		 return false;
-        	}else {
-        		return true;
+        		return false;
         	}
         }
 
