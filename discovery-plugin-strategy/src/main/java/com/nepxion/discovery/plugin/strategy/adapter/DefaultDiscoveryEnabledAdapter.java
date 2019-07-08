@@ -98,7 +98,9 @@ public class DefaultDiscoveryEnabledAdapter implements DiscoveryEnabledAdapter {
 
         if (StringUtils.isEmpty(versions)) {
             return true;
-        }
+}
+        
+
 
         // 如果精确匹配不满足，尝试用通配符匹配
         List<String> versionList = StringUtil.splitToList(versions, DiscoveryConstant.SEPARATE);
