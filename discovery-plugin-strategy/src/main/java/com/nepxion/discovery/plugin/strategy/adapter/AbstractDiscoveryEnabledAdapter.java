@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.nepxion.discovery.common.constant.DiscoveryConstant;
@@ -24,6 +26,8 @@ import com.nepxion.discovery.plugin.framework.adapter.PluginAdapter;
 import com.netflix.loadbalancer.Server;
 
 public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnabledAdapter {
+	 private static final Logger LOG = LoggerFactory.getLogger(AbstractDiscoveryEnabledAdapter.class);
+	
     @Autowired(required = false)
     private DiscoveryEnabledStrategy discoveryEnabledStrategy;
 
@@ -73,6 +77,7 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
             String serviceId = pluginAdapter.getServerServiceId(server);
             versions = versionMap.get(serviceId);
         } catch (Exception e) {
+        	LOG.error("version pattern str parse error,please check it,versionValue={}",versionValue,e);
             versions = versionValue;
         }
 
