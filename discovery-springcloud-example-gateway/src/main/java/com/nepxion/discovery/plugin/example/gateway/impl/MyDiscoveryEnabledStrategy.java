@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.nepxion.discovery.common.constant.DiscoveryConstant;
 import com.nepxion.discovery.plugin.framework.adapter.PluginAdapter;
 import com.nepxion.discovery.plugin.strategy.adapter.DiscoveryEnabledStrategy;
 import com.nepxion.discovery.plugin.strategy.gateway.context.GatewayStrategyContextHolder;
@@ -40,9 +39,10 @@ public class MyDiscoveryEnabledStrategy implements DiscoveryEnabledStrategy {
     private boolean applyFromHeader(Server server) {
         String mobile = gatewayStrategyContextHolder.getHeader("mobile");
         String serviceId = pluginAdapter.getServerServiceId(server);
-        String version = pluginAdapter.getServerMetadata(server).get(DiscoveryConstant.VERSION);
+        String version = pluginAdapter.getServerVersion(server);
+        String region = pluginAdapter.getServerRegion(server);
 
-        LOG.info("Gateway端负载均衡用户定制触发：mobile={}, serviceId={}, version={}", mobile, serviceId, version);
+        LOG.info("负载均衡用户定制触发：mobile={}, serviceId={}, version={}, region={}", mobile, serviceId, version, region);
 
         if (StringUtils.isNotEmpty(mobile)) {
             // 手机号以移动138开头，路由到1.0版本的服务上

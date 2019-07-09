@@ -12,7 +12,6 @@ package com.nepxion.discovery.common.entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -22,16 +21,24 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class RouterEntity implements Serializable {
     private static final long serialVersionUID = -4480475963615166799L;
 
+    private String serviceType;
     private String serviceId;
     private String version;
     private String region;
     private String host;
     private int port;
     private int weight = -1;
-    private Map<String, String> customMap;
     private String contextPath;
 
     private List<RouterEntity> nexts = new ArrayList<RouterEntity>();
+
+    public String getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
+    }
 
     public String getServiceId() {
         return serviceId;
@@ -79,14 +86,6 @@ public class RouterEntity implements Serializable {
 
     public void setWeight(int weight) {
         this.weight = weight;
-    }
-
-    public Map<String, String> getCustomMap() {
-        return customMap;
-    }
-
-    public void setCustomMap(Map<String, String> customMap) {
-        this.customMap = customMap;
     }
 
     public String getContextPath() {

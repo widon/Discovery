@@ -9,9 +9,12 @@ package com.nepxion.discovery.plugin.framework.configuration;
  * @version 1.0
  */
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.nepxion.discovery.common.constant.DiscoveryConstant;
 import com.nepxion.discovery.plugin.framework.cache.PluginCache;
 import com.nepxion.discovery.plugin.framework.cache.RuleCache;
 import com.nepxion.discovery.plugin.framework.context.PluginContextAware;
@@ -23,6 +26,7 @@ import com.nepxion.discovery.plugin.framework.listener.discovery.HostFilterDisco
 import com.nepxion.discovery.plugin.framework.listener.discovery.VersionFilterDiscoveryListener;
 import com.nepxion.discovery.plugin.framework.listener.loadbalance.HostFilterLoadBalanceListener;
 import com.nepxion.discovery.plugin.framework.listener.loadbalance.LoadBalanceListenerExecutor;
+import com.nepxion.discovery.plugin.framework.listener.loadbalance.NotificationLoadBalanceListener;
 import com.nepxion.discovery.plugin.framework.listener.loadbalance.VersionFilterLoadBalanceListener;
 import com.nepxion.discovery.plugin.framework.listener.register.CountFilterRegisterListener;
 import com.nepxion.discovery.plugin.framework.listener.register.HostFilterRegisterListener;
@@ -105,5 +109,12 @@ public class PluginAutoConfiguration {
     @Bean
     public VersionFilterLoadBalanceListener versionFilterLoadBalanceListener() {
         return new VersionFilterLoadBalanceListener();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(value = DiscoveryConstant.SPRING_APPLICATION_NO_SERVER_FOUND_NOTIFICATION_ENABLED, matchIfMissing = false)
+    public NotificationLoadBalanceListener notificationLoadBalanceListener() {
+        return new NotificationLoadBalanceListener();
     }
 }

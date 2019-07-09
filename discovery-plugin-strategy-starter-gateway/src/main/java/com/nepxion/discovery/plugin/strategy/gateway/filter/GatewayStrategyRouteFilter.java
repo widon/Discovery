@@ -9,99 +9,14 @@ package com.nepxion.discovery.plugin.strategy.gateway.filter;
  * @version 1.0
  */
 
-import reactor.core.publisher.Mono;
+public interface GatewayStrategyRouteFilter {
+    String getRouteVersion();
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.core.Ordered;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.web.server.ServerWebExchange;
+    String getRouteRegion();
 
-import com.nepxion.discovery.common.constant.DiscoveryConstant;
-import com.nepxion.discovery.common.entity.RuleEntity;
-import com.nepxion.discovery.common.entity.StrategyEntity;
-import com.nepxion.discovery.plugin.framework.adapter.PluginAdapter;
-import com.nepxion.discovery.plugin.strategy.context.StrategyContextHolder;
-import com.nepxion.discovery.plugin.strategy.gateway.constant.GatewayStrategyConstant;
+    String getRouteAddress();
 
-public class GatewayStrategyRouteFilter implements GlobalFilter, Ordered {
-    @Autowired
-    private ConfigurableEnvironment environment;
+    String getRouteVersionWeight();
 
-    @Autowired
-    private PluginAdapter pluginAdapter;
-    
-    @Autowired
-    protected StrategyContextHolder strategyContextHolder;
-
-    @Override
-    public int getOrder() {
-        return environment.getProperty(GatewayStrategyConstant.SPRING_APPLICATION_STRATEGY_GATEWAY_ROUTE_FILTER_ORDER, Integer.class, GatewayStrategyConstant.SPRING_APPLICATION_STRATEGY_GATEWAY_ROUTE_FILTER_ORDER_VALUE);
-    }
-
-    @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String routeVersion = getRouteVersion(exchange);
-        String routeRegion = getRouteRegion();
-        String routeAddress = getRouteAddress();
-
-        // 通过过滤器设置路由Header头部信息，来取代界面（Postman）上的设置，并全链路传递到服务端
-        ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
-        if (StringUtils.isNotEmpty(routeVersion)) {
-            requestBuilder.header(DiscoveryConstant.N_D_VERSION, routeVersion);
-        }
-        if (StringUtils.isNotEmpty(routeRegion)) {
-            requestBuilder.header(DiscoveryConstant.N_D_REGION, routeRegion);
-        }
-        if (StringUtils.isNotEmpty(routeAddress)) {
-            requestBuilder.header(DiscoveryConstant.N_D_ADDRESS, routeAddress);
-        }
-
-        ServerHttpRequest newRequest = requestBuilder.build();
-        ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
-
-        return chain.filter(newExchange);
-    }
-
-    // 从远程配置中心或者本地配置文件获取版本路由配置。如果是远程配置中心，则值会动态改变
-    protected String getRouteVersion(ServerWebExchange exchange) {
-        RuleEntity ruleEntity = pluginAdapter.getRule();
-        if (ruleEntity != null) {
-            StrategyEntity strategyEntity = ruleEntity.getStrategyEntity();
-            if (strategyEntity != null) {
-                return strategyEntity.getVersionValue();
-            }
-        }
-
-        return null;
-    }
-
-    // 从远程配置中心或者本地配置文件获取区域路由配置。如果是远程配置中心，则值会动态改变
-    protected String getRouteRegion() {
-        RuleEntity ruleEntity = pluginAdapter.getRule();
-        if (ruleEntity != null) {
-            StrategyEntity strategyEntity = ruleEntity.getStrategyEntity();
-            if (strategyEntity != null) {
-                return strategyEntity.getRegionValue();
-            }
-        }
-
-        return null;
-    }
-
-    // 从远程配置中心或者本地配置文件获取IP地址和端口路由配置。如果是远程配置中心，则值会动态改变
-    protected String getRouteAddress() {
-        RuleEntity ruleEntity = pluginAdapter.getRule();
-        if (ruleEntity != null) {
-            StrategyEntity strategyEntity = ruleEntity.getStrategyEntity();
-            if (strategyEntity != null) {
-                return strategyEntity.getAddressValue();
-            }
-        }
-
-        return null;
-    }
+    String getRouteRegionWeight();
 }

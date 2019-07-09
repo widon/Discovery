@@ -12,10 +12,13 @@ package com.nepxion.discovery.plugin.strategy.adapter;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import com.nepxion.discovery.common.constant.DiscoveryConstant;
 import com.nepxion.discovery.common.entity.RuleEntity;
@@ -23,16 +26,31 @@ import com.nepxion.discovery.common.entity.StrategyEntity;
 import com.nepxion.discovery.common.util.JsonUtil;
 import com.nepxion.discovery.common.util.StringUtil;
 import com.nepxion.discovery.plugin.framework.adapter.PluginAdapter;
+import com.nepxion.discovery.plugin.strategy.context.StrategyContextHolder;
+import com.nepxion.discovery.plugin.strategy.matcher.DiscoveryMatcherStrategy;
 import com.netflix.loadbalancer.Server;
 
-public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnabledAdapter {
-	 private static final Logger LOG = LoggerFactory.getLogger(AbstractDiscoveryEnabledAdapter.class);
-	
+public class DefaultDiscoveryEnabledAdapter implements DiscoveryEnabledAdapter {
+    @Autowired
+    private ApplicationContext applicationContext;
+    
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDiscoveryEnabledAdapter.class);
+
     @Autowired(required = false)
     private DiscoveryEnabledStrategy discoveryEnabledStrategy;
 
     @Autowired
+    private DiscoveryMatcherStrategy discoveryMatcherStrategy;
+
+    @Autowired
     protected PluginAdapter pluginAdapter;
+
+    protected StrategyContextHolder strategyContextHolder;
+
+    @PostConstruct
+    private void initialize() {
+        strategyContextHolder = applicationContext.getBean(StrategyContextHolder.class);
+    }
 
     @Override
     public boolean apply(Server server) {
@@ -56,7 +74,7 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
 
     @SuppressWarnings("unchecked")
     private boolean applyVersion(Server server) {
-        String versionValue = getVersionValue(server);
+        String versionValue = strategyContextHolder.getHeader(DiscoveryConstant.N_D_VERSION);
         if (StringUtils.isEmpty(versionValue)) {
             RuleEntity ruleEntity = pluginAdapter.getRule();
             if (ruleEntity != null) {
@@ -85,8 +103,11 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
             return true;
         }
         
-        Map<String, String> metadata = pluginAdapter.getServerMetadata(server);
-        String version = metadata.get(DiscoveryConstant.VERSION);
+//        Map<String, String> metadata = pluginAdapter.getServerMetadata(server);
+//        String version = metadata.get(DiscoveryConstant.VERSION);
+        
+        //里面有默认版本的处理
+        String version = pluginAdapter.getServerVersion(server);
         
         if (StringUtils.isEmpty(version)) {
         	/** 如果header里面有这个服务的版本要求，如果服务标签为空，则反回false
@@ -98,9 +119,17 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
         	}
         }
 
+        // 如果精确匹配不满足，尝试用通配符匹配
         List<String> versionList = StringUtil.splitToList(versions, DiscoveryConstant.SEPARATE);
         if (versionList.contains(version)) {
             return true;
+        }
+
+        // 通配符匹配。前者是通配表达式，后者是具体值
+        for (String versionPattern : versionList) {
+            if (discoveryMatcherStrategy.match(versionPattern, version)) {
+                return true;
+            }
         }
 
         return false;
@@ -108,7 +137,7 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
 
     @SuppressWarnings("unchecked")
     private boolean applyRegion(Server server) {
-        String regionValue = getRegionValue(server);
+        String regionValue = strategyContextHolder.getHeader(DiscoveryConstant.N_D_REGION);
         if (StringUtils.isEmpty(regionValue)) {
             RuleEntity ruleEntity = pluginAdapter.getRule();
             if (ruleEntity != null) {
@@ -123,11 +152,7 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
             return true;
         }
 
-        Map<String, String> metadata = pluginAdapter.getServerMetadata(server);
-        String region = metadata.get(DiscoveryConstant.REGION);
-        if (StringUtils.isEmpty(region)) {
-            return false;
-        }
+        String region = pluginAdapter.getServerRegion(server);
 
         String regions = null;
         try {
@@ -142,9 +167,17 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
             return true;
         }
 
+        // 如果精确匹配不满足，尝试用通配符匹配
         List<String> regionList = StringUtil.splitToList(regions, DiscoveryConstant.SEPARATE);
         if (regionList.contains(region)) {
             return true;
+        }
+
+        // 通配符匹配。前者是通配表达式，后者是具体值
+        for (String regionPattern : regionList) {
+            if (discoveryMatcherStrategy.match(regionPattern, region)) {
+                return true;
+            }
         }
 
         return false;
@@ -152,7 +185,7 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
 
     @SuppressWarnings("unchecked")
     private boolean applyAddress(Server server) {
-        String addressValue = getAddressValue(server);
+        String addressValue = strategyContextHolder.getHeader(DiscoveryConstant.N_D_ADDRESS);
         if (StringUtils.isEmpty(addressValue)) {
             RuleEntity ruleEntity = pluginAdapter.getRule();
             if (ruleEntity != null) {
@@ -174,9 +207,17 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
             return true;
         }
 
+        // 如果精确匹配不满足，尝试用通配符匹配
         List<String> addressList = StringUtil.splitToList(addresses, DiscoveryConstant.SEPARATE);
         if (addressList.contains(server.getHostPort()) || addressList.contains(server.getHost())) {
             return true;
+        }
+
+        // 通配符匹配。前者是通配表达式，后者是具体值
+        for (String addressPattern : addressList) {
+            if (discoveryMatcherStrategy.match(addressPattern, server.getHostPort()) || discoveryMatcherStrategy.match(addressPattern, server.getHost())) {
+                return true;
+            }
         }
 
         return false;
@@ -190,9 +231,11 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
         return discoveryEnabledStrategy.apply(server);
     }
 
-    protected abstract String getVersionValue(Server server);
+    public PluginAdapter getPluginAdapter() {
+        return pluginAdapter;
+    }
 
-    protected abstract String getRegionValue(Server server);
-
-    protected abstract String getAddressValue(Server server);
+    public StrategyContextHolder getStrategyContextHolder() {
+        return strategyContextHolder;
+    }
 }

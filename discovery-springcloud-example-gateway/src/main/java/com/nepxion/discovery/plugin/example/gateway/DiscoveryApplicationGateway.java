@@ -11,11 +11,17 @@ package com.nepxion.discovery.plugin.example.gateway;
  */
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 
 import com.nepxion.discovery.plugin.example.gateway.impl.MyDiscoveryEnabledStrategy;
+import com.nepxion.discovery.plugin.example.gateway.impl.MyDiscoveryListener;
+import com.nepxion.discovery.plugin.example.gateway.impl.MyLoadBalanceListener;
+import com.nepxion.discovery.plugin.example.gateway.impl.MyRegisterListener;
+import com.nepxion.discovery.plugin.example.gateway.impl.MyRouteFilter;
+import com.nepxion.discovery.plugin.strategy.gateway.constant.GatewayStrategyConstant;
 import com.nepxion.discovery.plugin.strategy.gateway.filter.GatewayStrategyRouteFilter;
 
 @SpringBootApplication
@@ -26,13 +32,30 @@ public class DiscoveryApplicationGateway {
     }
 
     @Bean
+    @ConditionalOnProperty(value = GatewayStrategyConstant.SPRING_APPLICATION_STRATEGY_GATEWAY_ROUTE_FILTER_ENABLED, matchIfMissing = true)
     public GatewayStrategyRouteFilter gatewayStrategyRouteFilter() {
-        return new GatewayStrategyRouteFilter();
+        return new MyRouteFilter();
+        // return new CustomizationGatewayStrategyRouteFilter();
     }
 
     @Bean
     public MyDiscoveryEnabledStrategy myDiscoveryEnabledStrategy() {
         return new MyDiscoveryEnabledStrategy();
+    }
+
+    @Bean
+    public MyRegisterListener myRegisterListener() {
+        return new MyRegisterListener();
+    }
+
+    @Bean
+    public MyDiscoveryListener myDiscoveryListener() {
+        return new MyDiscoveryListener();
+    }
+
+    @Bean
+    public MyLoadBalanceListener myLoadBalanceListener() {
+        return new MyLoadBalanceListener();
     }
 
     /*@Bean
