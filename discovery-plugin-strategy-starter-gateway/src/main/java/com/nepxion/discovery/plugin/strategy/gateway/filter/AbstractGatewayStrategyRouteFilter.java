@@ -28,6 +28,7 @@ import com.nepxion.discovery.plugin.strategy.gateway.constant.GatewayStrategyCon
 import com.nepxion.discovery.plugin.strategy.tracer.StrategyTracer;
 
 public abstract class AbstractGatewayStrategyRouteFilter implements GlobalFilter, Ordered, GatewayStrategyRouteFilter {
+//public abstract class AbstractGatewayStrategyRouteFilter extends GatewayStrategyRouteFilter {
     @Autowired
     private ConfigurableEnvironment environment;
 
