@@ -12,20 +12,8 @@ import org.springframework.core.Ordered;
  * @version 1.0
  */
 
-//public abstract class GatewayStrategyRouteFilter implements Ordered, GlobalFilter {
-//    String getRouteVersion() {return null;};
-//
-//    String getRouteRegion() {return null;};
-//
-//    String getRouteAddress() {return null;};
-//
-//    String getRouteVersionWeight() {return null;};
-//
-//    String getRouteRegionWeight() {return null;};
-//}
 
-
-public interface GatewayStrategyRouteFilter {
+public interface GatewayStrategyRouteFilter extends GlobalFilter, Ordered {
     String getRouteVersion();
 
     String getRouteRegion();
