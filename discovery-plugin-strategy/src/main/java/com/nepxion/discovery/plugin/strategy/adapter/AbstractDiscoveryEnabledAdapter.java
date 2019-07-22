@@ -76,7 +76,7 @@ public abstract class AbstractDiscoveryEnabledAdapter implements DiscoveryEnable
             Map<String, String> versionMap = JsonUtil.fromJson(versionValue, Map.class);
             String serviceId = pluginAdapter.getServerServiceId(server);
             if(StringUtils.isBlank(serviceId)) {
-            	LOG.debug("the service not have tags(serverName,version..),is not control by gray stategy");
+            	LOG.info("the service not have tags(serverName,version..),is not control by gray stategy");
             	return true;
             }
             versions = versionMap.get(serviceId);
