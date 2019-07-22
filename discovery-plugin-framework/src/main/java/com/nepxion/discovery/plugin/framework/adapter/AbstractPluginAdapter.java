@@ -149,7 +149,13 @@ public abstract class AbstractPluginAdapter implements PluginAdapter {
 
     @Override
     public String getServerServiceId(Server server) {
-        return getServerMetadata(server).get(DiscoveryConstant.SPRING_APPLICATION_NAME).toLowerCase();
+//        return getServerMetadata(server).get(DiscoveryConstant.SPRING_APPLICATION_NAME).toLowerCase();
+    	String serviceId = getServerMetadata(server).get(DiscoveryConstant.SPRING_APPLICATION_NAME);
+    	if(StringUtils.isNotBlank(serviceId)) {
+    		serviceId = serviceId.toLowerCase();
+    	}
+    	return serviceId;
+    	
     }
 
     @Override
